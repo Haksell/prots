@@ -1,14 +1,17 @@
 extern crate reqwest;
 
-use std::fs::File;
-use std::io::{BufReader, BufRead};
-
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let ligand = std::env::args().nth(1).unwrap();
+    let ligand = std::env::args().nth(1).expect("Please provide a ligand name as an argument");
     println!("{}", ligand);
-    return Ok(());
+
     let ligand_url = format!("http://ligand-expo.rcsb.org/reports/{}/{}/{}_ideal.pdb", &ligand[0..1], ligand, ligand);
     let res = reqwest::blocking::get(&ligand_url)?;
-    println!("{} | {}", ligand, if res.status().is_success() {"Y"} else {"N"});
+
+    if res.status().is_success() {
+        let text = res.text()?;
+        let lines: Vec<String> = text.trim().lines().map(|line| line.to_string()).collect();
+        println!("{:?}", lines);
+    }
+
     Ok(())
 }
