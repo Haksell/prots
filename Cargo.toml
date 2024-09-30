@@ -4,5 +4,4 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-bevy = "0.11"
-bevy_mod_picking = "0.10" # Optional, if you want to add camera picking and controls
+bevy = "0.12.1"
