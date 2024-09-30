@@ -56,7 +56,7 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
 
     // Load and spawn the scene from the `matilda.glb` file
     commands.spawn(SceneBundle {
-        scene: asset_server.load("models/matilda.glb#Scene0"),
+        scene: asset_server.load("matilda.glb#Scene0"),
         ..default()
     });
 }
