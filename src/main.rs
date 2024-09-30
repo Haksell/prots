@@ -1,27 +1,22 @@
-//! Loads and renders the `matilda.glb` file as a scene, and adds a camera controller for orbiting with the mouse.
-
-use bevy::pbr::CascadeShadowConfigBuilder;
-use bevy::pbr::DirectionalLightShadowMap;
 use bevy::{
-    input::{
-        mouse::{MouseMotion, MouseWheel},
-        Input,
-    },
+    input::{mouse::MouseMotion, mouse::MouseWheel, Input},
+    pbr::{CascadeShadowConfigBuilder, DirectionalLightShadowMap},
     prelude::*,
-    window::CursorGrabMode,
 };
 use std::f32::consts::*;
+
+const MAX_ANGLE_Y: f32 = FRAC_PI_2 - 0.001;
 
 fn main() {
     App::new()
         .insert_resource(DirectionalLightShadowMap { size: 4096 })
         .add_plugins(DefaultPlugins)
         .add_systems(Startup, setup)
-        .add_systems(Update, animate_light_direction)
-        .add_systems(Update, camera_controller) // Add camera control system
+        .add_systems(Update, camera_controller)
         .run();
 }
 
+// Camera control component to track rotation and zoom level
 #[derive(Component)]
 struct CameraController {
     pub radius: f32,
@@ -38,9 +33,9 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
             ..default()
         },
         CameraController {
-            radius: 3.0,  // Initial distance from the model
-            angle_x: 0.0, // Horizontal angle
-            angle_y: 0.0, // Vertical angle
+            radius: 100.0,
+            angle_x: 0.0,
+            angle_y: 0.0,
         },
     ));
 
@@ -66,24 +61,9 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
     });
 }
 
-// Animate the directional light rotation
-fn animate_light_direction(
-    time: Res<Time>,
-    mut query: Query<&mut Transform, With<DirectionalLight>>,
-) {
-    for mut transform in &mut query {
-        transform.rotation = Quat::from_euler(
-            EulerRot::ZYX,
-            0.0,
-            time.elapsed_seconds() * PI / 5.0,
-            -FRAC_PI_4,
-        );
-    }
-}
-
 // System for controlling the camera
 fn camera_controller(
-    time: Res<Time>,
+    _time: Res<Time>,
     mut motion_event_reader: EventReader<MouseMotion>,
     mouse_buttons: Res<Input<MouseButton>>,
     mut scroll_events: EventReader<MouseWheel>,
@@ -93,17 +73,17 @@ fn camera_controller(
 
     // Check if the left mouse button is pressed to enable rotation
     if mouse_buttons.pressed(MouseButton::Left) {
-        for event in motion_event_reader.iter() {
+        for event in motion_event_reader.read() {
             // Update camera angles based on mouse movement
             controller.angle_x -= event.delta.x * 0.005;
             controller.angle_y =
-                (controller.angle_y - event.delta.y * 0.005).clamp(-PI / 2.0, PI / 2.0);
+                (controller.angle_y - event.delta.y * 0.005).clamp(-MAX_ANGLE_Y, MAX_ANGLE_Y);
         }
     }
 
     // Zoom control using mouse scroll
-    for event in scroll_events.iter() {
-        controller.radius = (controller.radius - event.y * 0.2).clamp(1.0, 10.0);
+    for event in scroll_events.read() {
+        controller.radius = (controller.radius * (0.85_f32).powf(event.y)).clamp(0.01, 1000.0);
     }
 
     // Update camera position based on the new angles and radius
@@ -113,5 +93,5 @@ fn camera_controller(
 
     // Update the camera transform to "orbit" around the center (0, 0, 0)
     transform.translation = Vec3::new(x, y, z);
-    transform.look_at(Vec3::new(0.0, 0.3, 0.0), Vec3::Y);
+    transform.look_at(Vec3::ZERO, Vec3::Y);
 }
