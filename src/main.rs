@@ -5,7 +5,7 @@ use bevy::{
 };
 use std::f32::consts::*;
 
-const MAX_ANGLE_Y: f32 = FRAC_PI_2 - 0.001;
+const MAX_ANGLE_Y: f32 = FRAC_PI_2 - 1e-6;
 
 fn main() {
     App::new()
