@@ -1,3 +1,7 @@
+// https://chatgpt.com/c/66fab020-e804-8013-8620-e311d93778a5?conversationId=66fab020-e804-8013-8620-e311d93778a5
+// https://crates.io/crates/gltf
+//https://en.wikipedia.org/wiki/Protein_Data_Bank_(file_format)
+
 use bevy::{
     input::{mouse::MouseMotion, mouse::MouseWheel, Input},
     pbr::{CascadeShadowConfigBuilder, DirectionalLightShadowMap},
